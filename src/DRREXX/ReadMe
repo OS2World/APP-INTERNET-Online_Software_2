@@ -1,1 +1,6 @@
+The application is built with DrDialog and therefore use drrexx.exe as the engine that contain image resources that can be extracted and replaced with new ones.
 
+This folder contain the extracted resources to replace and reapply to the created application.
+
+2018 May 19
+//Jan-Erik Lärka
