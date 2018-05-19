@@ -1,6 +1,6 @@
 
 Online Software / 2
-is not intended to be an installed (there are plenty already available) itself, but it present you with information about new and updated software from various sources in one place.
+is not intended to be an installer (there are plenty already available) itself, but it present you with information about new and updated software from various sources in one place.
 It should also (when implemented) be able to launch / download software depending on the installation technique provided with each record.
 
 Purposes
@@ -15,8 +15,16 @@ Each image are stored to be reopened immidately the next time a record refer to 
 The application display each record with a title, image, a descriptive text, download link and possibly something more.
 The title for each record act as a link to the web site page (launch the web browser).
 
+Prerequisites
+DrCtl017.dll - to attach window on window and image viewer (Chris Wolgemuth)
+  https://www.os2world.com/wiki/index.php/DrDialog_Control 
+rxImgSize - for image processing to retrieve image size (Jan-Erik Lärka)
+  https://github.com/OS2World/LIB-REXX-RxImgSize
+
 ToDo
-Updated graphichal resoucres (Bitmaps)
-Google search like function with results in dropdown
+Updated graphichal resources (Bitmaps)
+Google search like function, with results in dropdown
 Settings
 Downloads/launch installers
+Help file
+Installer
