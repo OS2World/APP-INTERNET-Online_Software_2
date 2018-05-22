@@ -505,12 +505,18 @@ Rx2LocalDateFormat:
    !_sep_! = VAL( 'sDate' )
    !_YYYY_! = LEFT( ARG(1), 4 )
    IF 0 < POS( '-', ARG(1) ) THEN
+      PARSE VALUE ARG(1) WITH .'-'!_MM_!'-'!_DD_!
+   ELSE IF 7 < LENGTH( ARG(1) ) THEN
    DO
       !_MM_! = SUBSTR( ARG(1), 5, 2 )
       !_DD_! = RIGHT( ARG(1), 2 )
    END
-   ELSE
-      PARSE VALUE ARG(1) WITH .'-'!_MM_!'-'!_DD_!
+   ELSE IF LENGTH( ARG(1) ) < 7 THEN
+   DO
+      !_MM_! = SUBSTR( ARG(1), 5, 1 )
+      !_DD_! = RIGHT( ARG(1), 1 )
+   END
+   ELSE RETURN !_YYYY_!
    IF VAL( 'iDate' ) = 0 THEN
       RETURN !_MM_!||!_sep_!||!_DD_!||!_sep_!||!_YYYY_!
    ELSE IF VAL( 'iDate' ) = 1 THEN
