@@ -81,7 +81,6 @@ main_Init:
    CALL VAL 'sDate', STRIP( SysIni( 'USER', 'PM_National', 'sDate' ), 'T', D2C(0) )
    CALL VAL 'HOME', VALUE( 'HOME',,'OS2ENVIRONMENT' )'\.cache\eCSoft'
    
-   CALL Start 'RxRetrieve', 'http://ecsoft2.org/xml-export'
    CALL Start 'RxCategories', 'http://www.ecsoft2.org/export/categories-export.xml'
 RETURN
 
@@ -505,8 +504,13 @@ RETURN
 Rx2LocalDateFormat:
    !_sep_! = VAL( 'sDate' )
    !_YYYY_! = LEFT( ARG(1), 4 )
-   !_MM_! = SUBSTR( ARG(1), 5, 2 )
-   !_DD_! = RIGHT( ARG(1), 2 )
+   IF 0 < POS( '-', ARG(1) ) THEN
+   DO
+      !_MM_! = SUBSTR( ARG(1), 5, 2 )
+      !_DD_! = RIGHT( ARG(1), 2 )
+   END
+   ELSE
+      PARSE VALUE ARG(1) WITH .'-'!_MM_!'-'!_DD_!
    IF VAL( 'iDate' ) = 0 THEN
       RETURN !_MM_!||!_sep_!||!_DD_!||!_sep_!||!_YYYY_!
    ELSE IF VAL( 'iDate' ) = 1 THEN
@@ -562,10 +566,11 @@ RxCategories:
    !_tab_! = D2C(9)
    CALL RxGetURLComponents ARG(1)
    CALL RxURLConnect
+   CALL Notify 'category', 'add', 'New software: Latest'||!_tab_!||'http://ecsoft2.org/xml-export'
    !_input_! = RxFetchURL()
    DO WHILE 0 < POS( 'HREF=', TRANSLATE( !_input_! ) )
       PARSE VALUE !_input_! WITH .'<a href="http://www.ecsoft2.org/taxonomy/term/'!_tgt_!'"'.'>'!_val_!'</a>'!_input_!
-      CALL Notify 'category', 'add', !_val_!||!_tab_!||'http://ecsoft2.org/xml-export/term?'||!_tgt_!
+      CALL Notify 'category', 'add', !_val_!||!_tab_!||'http://ecsoft2.org/taxonomy/term/'||!_tgt_!||'/xml'
    END
 RETURN
    
