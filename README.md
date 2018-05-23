@@ -8,7 +8,7 @@ Desktop application to present applications listed on eCSoft/2.
 * DrDialog
 * REXX
 
-#Requirements
+# Requirements
 * RxImgSize (BSD 3-Clause) [https://github.com/OS2World/LIB-REXX-RxImgSize]
 
 # Author
