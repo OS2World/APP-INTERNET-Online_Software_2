@@ -220,17 +220,6 @@ zoom_Size:
    CALL zoom.c601.Top
 RETURN
 
-zoom_Click:
-   PARSE VALUE zoom.Frame() WITH l b r t
-   PARSE VALUE Position() WITH . . cw ch
-   PARSE VALUE VAL( 'sSize' ) WITH sw sh
-   PARSE VALUE rxImgReSize( c601.Hint() ) WITH iw ih id
-   IF cw < iw | ch < ih THEN
-      CALL zoom.Position MAX( 1, ( sw - iw ) % 2 - l ), MAX( 1, ( sh - ih ) % 2 - b ), iw + l + r, ih + t + b
-   ELSE
-      CALL zoom.Hide
-RETURN
-
 /*-----------------------------------------------------------------------------+
  |                                                                              |
  |  Global procedures:                                                          |
@@ -238,14 +227,25 @@ RETURN
  +-----------------------------------------------------------------------------*/
 RxShowZoom:
    IF LENGTH( c404.Hint() ) < 3 THEN RETURN
+   PARSE VALUE zoom.Position() WITH visible . . .
+   PARSE VALUE rxImgReSize( c402.Hint() ) WITH iw ih id
    CALL zoom.c601.Hint c402.Hint()
    CALL zoom.c602.Text c402.Hint()
    PARSE VALUE main.Position() WITH x y . .
    PARSE VALUE PositionFor( c404.Hint() ) WITH dx dy . .
    PARSE VALUE c402.Position() WITH cx cy cw ch
    PARSE VALUE zoom.Frame() WITH l b r t
-   CALL zoom.Position x + dx + cx, y + dy + cy, cw + l + r, ch + t + b
-   CALL zoom.Show
+   IF visible <> 0 THEN
+   DO
+      CALL zoom.Position 0, 0, 1, 1
+      CALL zoom.Hide
+   END
+   ELSE IF ( cw <> iw | ch <> ih ) & DATATYPE( iw, 'W' ) & DATATYPE( ih, 'W' ) THEN
+   DO
+      CALL zoom.Position MAX( 1, ( sw - iw ) % 2 - l ), MAX( 1, ( sh - ih ) % 2 - b ), iw + l + r, ih + t + b
+      CALL zoom.Show
+      CALL zoom.c601.Top
+   END
 RETURN
 
 RxRows:
@@ -339,8 +339,8 @@ RxDownloadImage:
    DO
       CALL RxMkDir VAL( 'HOME' )'\'!_fpath_!
       CALL RxGetURLComponents ARG(1)
-      CALL RxURLConnect
-      CALL CHAROUT !_fname_!, RxFetchURL()
+      IF 0 = RxURLConnect() THEN
+         CALL CHAROUT !_fname_!, RxFetchURL()
       CALL STREAM !_fname_!, 'C', 'CLOSE'
    END
 RETURN !_fname_!
@@ -531,16 +531,43 @@ RxRetrieve:
       PARSE PULL
    END
    rc = DIRECTORY( oldDir )
+
    CALL Notify 'main', 'progressbar', 0
    IF 0 < ARG() THEN
       CALL VAL 'URL', ARG(1)
    CALL RxGetURLComponents VAL( 'URL' )
-   CALL rxURLConnect
-   CALL VAL 'Fill', 0
-   CALL Start 'RxRows', 1208
-   CALL rxFetchURL
-   CALL VAL 'Fill', 0
-   CALL Notify 'main', 'progressbar', 'show'
+   IF 0 <> RxURLConnect() THEN
+   DO
+      CALL VAL 'Fill', 0
+      CALL Start 'RxRows', 1208
+      !_fname_! = VAL( 'HOME' )'\latest.xml'
+      IF STREAM( !_fname_!, 'C', 'QUERY EXISTS' ) <> '' THEN
+      DO
+         !_fsize_! = STREAM( !_fname_!, 'C', 'QUERY SIZE' )
+         IF 10 < !_fsize_! THEN
+         DO
+            !_input_! = CHARIN( !_fname_!, 1, !_fsize_! )
+            CALL STREAM !_fname_!, 'C', 'CLOSE'
+            DO WHILE 0 < POS( '</node>', !_input_! )
+               PARSE VALUE !_input_! WITH '<node>'!_tags_!'</node>'!_input_!
+               QUEUE !_tags_!
+               CALL VAL 'Fill', 1
+            END
+         END
+      END
+      
+      CALL VAL 'Fill', 0
+      CALL Notify 'main', 'progressbar', 'show'
+   END
+   ELSE DO
+      CALL VAL 'Fill', 0
+      CALL Start 'RxRows', 1208
+      
+      CALL CHAROUT VAL( 'HOME' )'\latest.xml', RxFetchURL()
+      
+      CALL VAL 'Fill', 0
+      CALL Notify 'main', 'progressbar', 'show'
+   END
 RETURN
    
 RxDropDown:
@@ -571,14 +598,16 @@ RxCategories:
    !_crlf_! = D2C(13)||D2C(10)
    !_tab_! = D2C(9)
    CALL RxGetURLComponents ARG(1)
-   CALL RxURLConnect
+   !_input_! = ''
+   IF 0 = RxURLConnect() THEN
+      !_input_! = RxFetchURL( )
+   ELSE CALL SysSleep 2
    CALL Notify 'category', 'add', 'New software: Latest'||!_tab_!||'http://ecsoft2.org/xml-export'
-   !_input_! = RxFetchURL()
    DO WHILE 0 < POS( 'HREF=', TRANSLATE( !_input_! ) )
       PARSE VALUE !_input_! WITH .'<a href="http://www.ecsoft2.org/taxonomy/term/'!_tgt_!'"'.'>'!_val_!'</a>'!_input_!
-      CALL Notify 'category', 'add', !_val_!||!_tab_!||'http://ecsoft2.org/taxonomy/term/'||!_tgt_!||'/xml'
+      CALL Notify 'category', 'add', !_val_!||!_tab_!||'http://www.ecsoft2.org/taxonomy/term/'||!_tgt_!||'/xml'
    END
-RETURN
+RETURN 0
    
 RxDecodeURL: PROCEDURE
 PARSE ARG url
