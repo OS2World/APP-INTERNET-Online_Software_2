@@ -9,9 +9,9 @@ Another purpose is to create a tool that make you explore software written for O
 
 Overview
 Online Software / 2 connect to the site eCSoft/2 (http://www.ecsoft2.org) and fetch information about the latest software added to the site. 
-The responce is formatted as XML and UTF-8 that it has to process.
+The response is formatted as XML and UTF-8 that it has to process.
 It follow links to each preview image and full screen image that can be seen for each application/tool/... listed.
-Each image are stored to be reopened immidately the next time a record refer to it.
+Each image are stored to be reopened immediately the next time a record refer to it.
 The application display each record with a title, image, a descriptive text, download link and possibly something more.
 The title for each record act as a link to the web site page (launch the web browser).
 
