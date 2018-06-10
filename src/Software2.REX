@@ -226,13 +226,13 @@ RETURN
  |                                                                              |
  +-----------------------------------------------------------------------------*/
 RxShowZoom:
-   IF LENGTH( c404.Hint() ) < 3 THEN RETURN
+   IF LENGTH( c403.Hint() ) < 3 THEN RETURN
    PARSE VALUE zoom.Position() WITH visible . . .
    PARSE VALUE rxImgReSize( c402.Hint() ) WITH iw ih id
    CALL zoom.c601.Hint c402.Hint()
    CALL zoom.c602.Text c402.Hint()
    PARSE VALUE main.Position() WITH x y . .
-   PARSE VALUE PositionFor( c404.Hint() ) WITH dx dy . .
+   PARSE VALUE PositionFor( c403.Hint() ) WITH dx dy . .
    PARSE VALUE c402.Position() WITH cx cy cw ch
    PARSE VALUE zoom.Frame() WITH l b r t
    IF visible <> 0 THEN
@@ -250,7 +250,7 @@ RETURN
 
 RxRows:
    !_remove_! = SPACE( TRANSLATE( XRANGE(),, XRANGE( 'a', 'z' )XRANGE( 'A', 'Z' )XRANGE( '0', '9' )'_?!' ), 0 )
-   !_tags_! = 'name category updated_date developer desc url sshot'
+   !_tags_! = 'name category updated_date developer desc url sshot dwnld'
    CALL RxMkDir VAL( 'HOME' )
    f.1 = ' <'; t.1 = '<'; f.2 = '> '; t.2 = '>'; f.3 = '&lt;'; t.3 = '<'; f.4 = '&gt;'; t.4 = '>'; f.5 = '&amp;'
    t.5 = '&'; f.6 = 'nbsp;'; t.6 = ' '; f.0 = 6; r.1 = '  '; r.2 = !_tab_!; r.3 = !_lf_!; r.0 = 3; !_lf_! = D2C(10)
@@ -306,15 +306,15 @@ RxRows:
             END
             ELSE DO
                CALL VAL 'viewport.'!_counter_!'.'!_tag_!'.'!_links_!'.0', 2
-               CALL VAL 'viewport.'!_counter_!'.'!_tag_!'.'!_links_!'.href', !_tgt_!
+               CALL VAL 'viewport.'!_counter_!'.'!_tag_!'.'!_links_!'.href', STRIP( !_tgt_!,, !_tab_! )
             END
-            CALL VAL 'viewport.'!_counter_!'.'!_tag_!'.'!_links_!, !_val_!
+            CALL VAL 'viewport.'!_counter_!'.'!_tag_!'.'!_links_!, STRIP( !_val_!,, !_tab_! )
          END
          IF !_links_! = 0 THEN
          DO
             !_links_! = 1
             CALL VAL 'viewport.'!_counter_!'.'!_tag_!'.'!_links_!'.0', 1
-            CALL VAL 'viewport.'!_counter_!'.'!_tag_!'.'!_links_!, !_val_!
+            CALL VAL 'viewport.'!_counter_!'.'!_tag_!'.'!_links_!, STRIP( !_val_!,, !_tab_! )
          END
          CALL VAL 'viewport.'!_counter_!'.'!_tag_!'.0', !_links_!
          CALL VAL 'viewport.0', !_counter_!
@@ -326,7 +326,35 @@ RxRows:
    CALL Notify 'viewport', 'range'
    CALL Notify 'main', 'progressbar', 0
 RETURN 0
-
+   
+Search:
+   IF !_searching_! = 1 THEN RETURN 0
+   IF LENGTH( STRIP( ARG(1) ) ) < 3 THEN RETURN 0
+   !_searching_! = 1
+   CALL main.C107.Text ''
+   CALL dropdown.C502.Delete
+   CALL RxDropDown 1
+   !_srch4_! = SysMapCase( ARG(1) )
+   !_tags_! = 'name category updated_date desc sshot dwnld'
+   !_type_! = 'Title Category Updated Descrition Screenshot URL'
+   DO !_counter_! = 1 TO VAL( 'viewport.0' )
+      DO !_i_! = 1 TO WORDS( !_tags_! )
+         !_tag_! = SUBWORD( !_tags_!, !_i_!, 1 )
+         IF DATATYPE( VAL( 'viewport.'!_counter_!'.'!_tag_!'.0' ), 'W' ) THEN
+         DO !_links_! = 1 TO VAL( 'viewport.'!_counter_!'.'!_tag_!'.0' )
+            IF 0 < LENGTH( VAL( 'viewport.'!_counter_!'.'!_tag_!'.'!_links_! ) ) THEN
+               IF 0 < POS( !_srch4_!, SysMapCase( VAL( 'viewport.'!_counter_!'.'!_tag_!'.'!_links_! ) ) ) THEN
+               DO
+                  !_val_!.1 =  SUBWORD( !_type_!, !_i_!, 1 )||': '||VAL( 'viewport.'!_counter_!'.'!_tag_!'.'!_links_! )
+                  !_val_!.2 = !_counter_!
+                  CALL dropdown.C502.SetStem '!_val_!', dropdown.C502.Add( !_val_!.1 )
+               END
+         END
+      END
+   END
+   !_searching_! = 0
+RETURN 0
+   
 RxDownloadImage:
    PROCEDURE EXPOSE host.
    PARSE VALUE REVERSE( ARG(1) ) WITH !_fname_!'/'!_subfolder_!'/'!_folder_!'/'.
@@ -425,6 +453,14 @@ RxFetchURL:
    DO WHILE 0 < rc
       rc = SockRecv( host.socket, '!_chnk_!', 1000 )
       !_txt_! = !_txt_!||!_chnk_!
+      IF 0 < POS( 'HTTP/1.1 302 Found', !_txt_! ) THEN
+      DO
+         SAY 'BEEEEEEP!' !_txt_!
+         PARSE VALUE !_txt_! WITH .'HTTP/1.1 302 Found'.'Location: 'redirected (crlf).
+         CALL RxGetURLComponents redirected
+         IF 0 = RxURLConnect() THEN
+            RETURN RxFetchURL()
+      END
       IF 0 < POS( '</node>', !_txt_! ) THEN
       DO
          PARSE VALUE !_txt_! WITH '<node>'!_tags_!'</node>'!_txt_!
@@ -484,13 +520,17 @@ RxViewport:
          !_val_! = !_val_!||VAL( 'viewport.'j'.sshot.'k'.src' )||' '
       END
       CALL TextFor 'app'i, 'C403', STRIP( !_val_! )
+      CALL HintFor 'app'i, 'C403', 'app'i
       !_val_! = ''
       DO k = 1 TO VAL( 'viewport.'j'.sshot.0' )
          !_val_! = !_val_!||VAL( 'viewport.'j'.sshot.'k'.href' )||' '
       END
       CALL HintFor 'app'i, 'C402', STRIP( !_val_! )
-      CALL TextFor 'app'i, 'C404', 'Download'
-      CALL HintFor 'app'i, 'C404', 'app'i
+      IF 0 < LENGTH( STRIP( VAL( 'viewport.'j'.dwnld.1' ) ) ) THEN
+         CALL TextFor 'app'i, 'C404', 'Download'
+      ELSE
+         CALL TextFor 'app'i, 'C404', ' '
+      CALL HintFor 'app'i, 'C404', STRIP( VAL( 'viewport.'j'.dwnld.1' ) )
       !_val_! = ''
       DO k = 1 TO VAL( 'viewport.'j'.category.0' )
          !_val_! = !_val_!||VAL( 'viewport.'j'.category.'k )||' '
@@ -555,9 +595,6 @@ RxRetrieve:
             END
          END
       END
-      
-      CALL VAL 'Fill', 0
-      CALL Notify 'main', 'progressbar', 'show'
    END
    ELSE DO
       CALL VAL 'Fill', 0
@@ -565,17 +602,17 @@ RxRetrieve:
       
       CALL CHAROUT VAL( 'HOME' )'\latest.xml', RxFetchURL()
       
-      CALL VAL 'Fill', 0
-      CALL Notify 'main', 'progressbar', 'show'
    END
+   CALL VAL 'Fill', 0
+   CALL Notify 'main', 'progressbar', 'show'
 RETURN
    
 RxDropDown:
-   IF 0 < ARG() THEN
+   /*IF 0 < ARG() THEN
    DO
       CALL category.Visible 0
       CALL dropdown.Visible 0
-   END
+   END*/
    dd = 'category dropdown'
    dd_arrow = ' '
    PARSE VALUE main.Frame() WITH l b r t
@@ -588,7 +625,8 @@ RxDropDown:
       previous = POS( TextFor( 'main', 'C10'||( 2 + ( i - 1 ) * 5 ) ), SUBWORD( dd_arrow, i, 1 ) )
       IF ARG(1) = ( i - 1 ) THEN
          previous = \( 1 < previous )
-      ELSE previous = 0
+      ELSE
+         previous = 0
       CALL TextFor 'main', 'C10'||( 2 + ( i - 1 ) * 5 ), SUBSTR( SUBWORD( dd_arrow, i, 1 ), 1 + previous, 1 )
       CALL VisibleFor SUBWORD( dd, i, 1 ),, previous
    END
@@ -604,8 +642,8 @@ RxCategories:
    ELSE CALL SysSleep 2
    CALL Notify 'category', 'add', 'New software: Latest'||!_tab_!||'http://ecsoft2.org/xml-export'
    DO WHILE 0 < POS( 'HREF=', TRANSLATE( !_input_! ) )
-      PARSE VALUE !_input_! WITH .'<a href="http://www.ecsoft2.org/taxonomy/term/'!_tgt_!'"'.'>'!_val_!'</a>'!_input_!
-      CALL Notify 'category', 'add', !_val_!||!_tab_!||'http://www.ecsoft2.org/taxonomy/term/'||!_tgt_!||'/xml'
+      PARSE VALUE !_input_! WITH .'<term>'.'<a href="'!_tgt_!'"'.'>'!_val_!'</a>'.'</term>'!_input_!
+      CALL Notify 'category', 'add', !_val_!||!_tab_!||!_tgt_!
    END
 RETURN 0
    
