@@ -30,7 +30,7 @@ One of the purposes of this project is to involve you in the process of writing 
 
 [Second step: Development tools](https://github.com/OS2World/APP-INTERNET-Online_Software_2/wiki/Second-step:-Development-tools)
 
-[Third step: Download the project files](https://github.com/OS2World/APP-INTERNET-Online_Software_2/Wiki/Third-step:-Download-the-project-files)
+[Third step: Download the project files](https://github.com/OS2World/APP-INTERNET-Online_Software_2/wiki/Third-step:-Download-the-project-files)
 
 ## You as User
 Another purpose is to create a tool that make you explore software written for OS/2.
