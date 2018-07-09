@@ -201,6 +201,7 @@ row_Size:
    CALL VAL 'wimg', ( VAL( 'rowheight' ) - 6 - VAL( 'wfield' ) ) * 1.42 % 1
    wdate = 75
    hrow = ( VAL( 'rowheight' ) - 6 - VAL( 'wfield' ) ) % 4 - 1
+   CALL c401.Text '#9999'
    CALL c401.Position 0, 0, w, h
    CALL c403.Position 0, VAL( 'wfield' ) + 6, VAL( 'wimg' ), h - 6 - VAL( 'wfield' )
    CALL c402.Position 0, VAL( 'wfield' ) + 6, VAL( 'wimg' ), h - 6 - VAL( 'wfield' )
@@ -943,4 +944,4 @@ HALT:
   SIGNAL RETURN
    
 BLDLVL:
-   RETURN @#Jan-Erik Laerka:1.00.00#@##1## 2018-07-08               SONYVAIO::::0::@@Show software listed online with eCSoft/2
+RETURN @#Jan-Erik Laerka:1.00.00#@##1## 2018-07-08               SONYVAIO::::0::@@Show software listed online with eCSoft/2
