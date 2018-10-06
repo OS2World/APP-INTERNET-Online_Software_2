@@ -6,7 +6,9 @@
 
 #define main             100
 #define viewport         200
-#define header           300
+#define settings         300
 #define row              400
 #define category         500
 #define zoom             600
+#define tooltip          700
+#define msgbox           800

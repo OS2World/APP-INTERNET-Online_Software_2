@@ -10,7 +10,7 @@
 
 #include <os2.h>
 
-#include "d:\programs\drdialog\drrexx\drrexx.h"
+//#include "d:\programs\drdialog\stub\stub.h"
 
 BITMAP      101 "b0000065.bmp"
 BITMAP      102 "b0000066.bmp"
@@ -18,7 +18,7 @@ BITMAP      103 "b0000067.bmp"
 BITMAP      104 "b0000068.bmp"
 BITMAP      105 "b0000069.bmp"
 BITMAP      106 "b000006a.bmp"
-BITMAP      107 "b000006b.bmp"
+/*BITMAP      107 "b000006b.bmp"
 BITMAP      108 "b000006c.bmp"
 BITMAP      109 "b000006d.bmp"
 BITMAP      110 "b000006e.bmp"
@@ -27,18 +27,12 @@ BITMAP      112 "b0000070.bmp"
 BITMAP      113 "b0000071.bmp"
 BITMAP      114 "b0000072.bmp"
 BITMAP      115 "b0000073.bmp"
-BITMAP      116 "b0000074.bmp"
+BITMAP      116 "b0000074.bmp"*/
 BITMAP      117 "b0000075.bmp"
 BITMAP      118 "b0000076.bmp"
 BITMAP      119 "b0000077.bmp"
 BITMAP      120 "b0000078.bmp"
 BITMAP      121 "b0000079.bmp"
-BITMAP      122 "b000007a.bmp"
-BITMAP      123 "b000007b.bmp"
-BITMAP      124 "b000007c.bmp"
-BITMAP      125 "b000007d.bmp"
-BITMAP      126 "b000007e.bmp"
-BITMAP      127 "b000007f.bmp"
 BITMAP      721 "b00002d1.bmp"
 BITMAP      722 "b00002d2.bmp"
 BITMAP      723 "b00002d3.bmp"
@@ -65,6 +59,8 @@ BITMAP      8015 "b0001f4f.bmp"
 BITMAP      8016 "b0001f50.bmp"
 BITMAP      8017 "b0001f51.bmp"
 BITMAP      9999 "b000270f.bmp"
+
+DEFAULTICON  "i0000016.ico"
 
 ICON        999 "i00003e7.ico"
 

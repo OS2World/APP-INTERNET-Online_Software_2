@@ -1,13 +1,15 @@
 #include "OS2.H"
 
-DLGTEMPLATE 500 LOADONCALL MOVEABLE DISCARDABLE
+DLGTEMPLATE 800 LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
-    DIALOG "", 500, 16, 163, 9, 8, 
-           WS_SYNCPAINT | NOT FS_DLGBORDER, 
+    DIALOG "RexxUtil is unavailable", 800, 20, 94, 139, 53, 
+           WS_SYNCPAINT | NOT FS_DLGBORDER | FS_SIZEBORDER | WS_VISIBLE,
+           FCF_SYSMENU | FCF_TITLEBAR
     BEGIN
-        CONTROL         "", 502, 1, 1, 7, 6, WC_CONTAINER,
-                        WS_VISIBLE | WS_TABSTOP | CCS_SINGLESEL | CCS_AUTOPOSITION
-        CONTROL         "c8b15x0y0<(x0,100)(x100,100)(x0,100)>x100,100c0<(x100,0)(x0,0)(x100,0)>c7X1,1<(x0,100DR)(x100,100DL)(x0,100DR)>", 501, 0, 0, 9, 8, "TURTLE",
-                        WS_VISIBLE | WS_CLIPSIBLINGS | 32768
+        LTEXT           "This application need functions provided by RexxUtil to function", 801, 29, 14, 109, 28,
+                        NOT WS_GROUP | DT_WORDBREAK
+        PUSHBUTTON      "Abort", 802, 49, 3, 40, 9, WS_GROUP
+        CONTROL         "#725", 803, 6, 22, 21, 20, "BILLBOARD",
+                        WS_VISIBLE | WS_CLIPSIBLINGS | 32769
     END
 END
