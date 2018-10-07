@@ -13,6 +13,7 @@ Desktop application to present applications listed on eCSoft/2.
 # Requirements
 * RxImgSize (BSD 3-Clause) [https://github.com/OS2World/LIB-REXX-RxImgSize]
 * DrCtl017.dll (BSD 3-Clauses alike) [https://www.os2world.com/wiki/index.php/DrDialog_Control]
+* gbm.dll (  ) [https://ecsoft2.org/generalised-bitmap-module-gbm]
 
 # Author
 Jan-Erik Lärka
@@ -49,3 +50,6 @@ DrCtl017.dll - to attach window on window and image viewer (Chris Wolgemuth)
 
 rxImgSize - for image processing to retrieve image size (Jan-Erik Lärka)
   https://github.com/OS2World/LIB-REXX-RxImgSize
+
+Generalized Bitmap Module (GBM) - support large number of image formats (Heiko Nitzsche)
+  https://ecsoft2.org/generalised-bitmap-module-gbm

@@ -1,7 +1,7 @@
 
 Online Software / 2
 is not intended to be an installer (there are plenty already available) itself, but it present you with information about new and updated software from various sources in one place.
-It should also (when implemented) be able to launch / download software depending on the installation technique provided with each record.
+It launch downloaded packages and software depending on file associations, but a future helper application may support more feature depending on the installation technique provided with each record.
 
 Purposes
 One of the purposes of this project is to involve you in the process of writing useful rexx scripts and applications for OS/2, eComStation and Arca OS.
@@ -20,11 +20,16 @@ DrCtl017.dll - to attach window on window and image viewer (Chris Wolgemuth)
   https://www.os2world.com/wiki/index.php/DrDialog_Control 
 rxImgSize - for image processing to retrieve image size (Jan-Erik Lärka)
   https://github.com/OS2World/LIB-REXX-RxImgSize
+Generalized Bitmap Module (GBM), built with OpenWatcom - used by rxImgSize that was built with OpenWatcom
+  https://ecsoft2.org/generalised-bitmap-module-gbm
 
-ToDo
+Done
 Updated graphichal resources (Bitmaps)
 Google search like function, with results in dropdown
 Settings
 Downloads/launch installers
+
+ToDo
+UTF-8 to system codepage translation
 Help file
 Installer
