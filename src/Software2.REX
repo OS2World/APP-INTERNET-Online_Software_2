@@ -8,7 +8,7 @@
 
 main_Init:
 
-   env = 'OS2ENVIRONMENT'
+   !_env_! = 'OS2ENVIRONMENT'
 
    IF \RxFuncQuery( 'SysDropFuncs' ) THEN
       CALL SysDropFuncs
@@ -18,7 +18,7 @@ main_Init:
       EXIT ModalFor( 'msgbox' )
    END
 
-   CALL VAL 'HOME', VALUE( 'HOME',, env )'\.cache\eCSoft'
+   CALL VAL 'HOME', VALUE( 'HOME',, !_env_! )'\.cache\eCSoft'
    CALL VAL 'INI', VAL( 'HOME' )'\eCSoft2.ini'
 
    CALL VAL 'downloads', SysIni( VAL( 'INI' ), 'OnlineSoftware', 'downloads' )
@@ -39,7 +39,8 @@ main_Init:
    CALL VAL 'efield', SysIni( VAL( 'INI' ), 'OnlineSoftware', 'efield' )
    IF \DATATYPE( VAL( 'efield' ), 'W' ) THEN
       CALL VAL 'efield', 20
-   
+
+   CALL VAL 'Sequence', -1
    CALL VAL 'isBusy', 0
    CALL VAL 'app0', 0
    CALL VAL 'sbar', 14
@@ -52,8 +53,10 @@ main_Init:
 
    PARSE SOURCE . . !_this_!
    PARSE VALUE REVERSE( !_this_! ) WITH .'\'!_path_!
-   CALL DIRECTORY REVERSE( !_path_! )
-   
+   !_path_! = REVERSE( !_path_! )
+   CALL DIRECTORY !_path_!
+   CALL VALUE 'BOOKSHELF',VALUE( 'BOOKSHELF',, !_env_! )||';'||!_path_!, !_env_!
+
    IF \RxFuncQuery( 'DRCtrlDropFuncs' ) THEN
       CALL DRCtrlDropFuncs
    DO i = 20 TO 15 BY -1
@@ -70,27 +73,25 @@ main_Init:
    IF i < 15 THEN
       EXIT RxMessageBox( 'This application need DrCtrl 0.1.7 by Chris Wolgemuth', 'Install DrCtrl 0.1.7', 'Cancel', 'Error' )
 
-   IF RxLoadLib( 'rxImgLoadFuncs', 'rxImgSze' ) THEN
-      EXIT RxMessageBox( 'This application need rxImgSze 1.0.3 by Jan-Erik L„rka', 'Install rxImgSze 1.0.3', 'Cancel', 'Error' )
-   !_GBM_OK_! = SysIni( VAL( 'INI' ), 'OnlineSoftware', 'GBM' )
-   IF !_GBM_OK_! <> 1 THEN
-      !_GBM_OK_! = ( 0 < POS( 'WAT', TRANSLATE( RxChkDLL( 'GBM.DLL', '(GBM,', ) ) ) )
-   IF !_GBM_OK_! <> 1 THEN
-   DO
-      IF RxMessageBox( 'This application need GBM.DLL built with OpenWatcom. ',
-         'You may experience instability and unresonably large images with the',
-         'current version of GBM.DLL available on your system. ',
-         '',
-         'Do you want to continue anyway?', 'Install OpenWatcom GBM.DLL', 'YesNo', 'Query' ) = 7 THEN
-         EXIT 5
-   END
-   CALL SysIni VAL( 'INI' ), 'OnlineSoftware', 'GBM', 1
-
+   IF RxLoadLib( 'GBM_LoadFuncs', 'GBMRX' ) THEN
+      EXIT RxMessageBox( 'This application need GBM AND GBMRX by Heiko Nitzsche', 'Install GBM 1.35 or newer', 'Cancel', 'Error' )
+   
    CALL VAL 'iDate', STRIP( SysIni( 'USER', 'PM_National', 'iDate' ), 'T', D2C(0) )
    CALL VAL 'sDate', STRIP( SysIni( 'USER', 'PM_National', 'sDate' ), 'T', D2C(0) )
 
 RETURN 0
-
+   
+main_deInit:
+   IF \RxFuncQuery( 'CurlDropFuncs' ) THEN
+   CALL CurlDropFuncs 'UNLOAD'
+   IF \RxFuncQuery( 'GBM_DropFuncs' ) THEN
+   CALL GBM_DropFuncs
+   IF \RxFuncQuery( 'DRCtrlDropFuncs' ) THEN
+      CALL DRCtrlDropFuncs
+   IF \RxFuncQuery( 'SysDropFuncs' ) THEN
+      CALL SysDropFuncs
+SIGNAL RETURN
+   
 main_Open:
    DO WHILE VAL( 'sDate' ) = '' & VAL( 'iDate' ) = ''
       CALL Sleep 500
@@ -145,7 +146,6 @@ main_Size:
       CALL main.c110.Position l, b, w - l - r, h - t - b - VAL( 'efield' ) - 2
       CALL main.c111.Position w - r - VAL( 'sbar' ) - 1, b + 1, VAL( 'sbar' ), h - t - b - VAL( 'efield' ) - 4
       CALL main.c112.Position 0, 0, VAL( 'sbar' ), h - t - b - VAL( 'efield' ) - 2
-      CALL main.c113.Position l + VAL( 'efield' ) + VAL( 'wfield' ), ypos - 1, wpos, VAL( 'efield' )
       CALL viewport.Position l + 2, b + 2, w - l - r - VAL( 'sbar' ) - 3, h - t - b - VAL( 'efield' ) - 6
       DO i = 101 TO 111
          IF isBetween( 103, i, 107 ) THEN ITERATE i
@@ -155,8 +155,6 @@ main_Size:
          CALL ShowFor 'main', 'C105'
    END
    CALL main.c106.Visible ( 4 < LENGTH( VAL( 'params' ) ) )
-   CALL main.c113.Visible \main.c106.Visible()
-   CALL main.c113.Top
    CALL VAL 'isBusy', 0
    IF \main.Visible() THEN
       CALL Show
@@ -277,7 +275,7 @@ DO
          CALL VAL 'viewport.'!_j_!'.dwnld.clr', '#200 0 200'
       END
       ELSE
-      DO 
+      DO
          IF VAL( 'downloads' ) = 'A' THEN
          DO
             !_temp_! = DRCtrlPickDirectory( VAL( 'HOME' ), 'Save to directory' )
@@ -329,14 +327,14 @@ row_Populate:
          CALL HintFor 'app'!_i_!, 'C401', 'app'!_i_!
          CALL TextFor 'app'!_i_!, 'C406', VAL( 'viewport.'!_j_!'.name.a' )
          CALL TextFor 'app'!_i_!, 'C407', D2L( VAL( 'viewport.'!_j_!'.updated_date' ) )
-         
+
          !_val_! = ''
          IF DATATYPE( VAL( 'viewport.'!_j_!'.developer.0' ), 'W' ) THEN
          DO !_k_! = 1 TO VAL( 'viewport.'!_j_!'.developer.0' )
             !_val_! = !_val_!||VAL( 'viewport.'!_j_!'.developer.'!_k_! )||' '
          END
          ELSE !_val_! = VAL( 'viewport.'!_j_!'.developer.a' )
-         
+
          !_val_! = ''
          IF DATATYPE( VAL( 'viewport.'!_j_!'.sshot.0' ), 'W' ) THEN
          DO !_k_! = 1 TO VAL( 'viewport.'!_j_!'.sshot.0' )
@@ -349,7 +347,7 @@ row_Populate:
             CALL VAL 'viewport.'!_j_!'.sshot.a.img.src', !_val_!
             CALL VAL 'viewport.'!_j_!'.sshot.a.href', RxLoadImage( 'viewport.'!_j_!'.sshot.a.href' )
          END
-         CALL TextFor 'app'!_i_!, 'C403', STRIP( !_val_! )        
+         CALL TextFor 'app'!_i_!, 'C403', STRIP( !_val_! )
          CALL VAL 'viewport.'!_j_!'.dwnld', STRIP( VAL( 'viewport.'!_j_!'.dwnld' ) )
          IF isBetween( -1, VAL( 'viewport.'!_j_!'.0' ), 100 ) THEN
          DO
@@ -407,11 +405,10 @@ zoom_Visible:
          !_l_! = !_k_!
          IF !_to_! = 1 THEN !_l_! = 'a'
          !_image_! = RxLoadImage( 'viewport.'!_j_!'.sshot.'!_l_!'.href', !_j_! )
-         PARSE VALUE rxImgReSize( !_image_! ) WITH iw ih id
+         PARSE VALUE RxImgReSize( !_image_! ) WITH iw ih id
          CALL zoom.c601.Hint !_image_!
          CALL zoom.c602.Text !_image_!
          PARSE VALUE main.Position() WITH x y . .
-         IF RxChkAbort(0) THEN RETURN 0
          PARSE VALUE PositionFor( 'app'||( !_j_! // VAL( 'app0' ) + 1 ) ) WITH dx dy . .
          PARSE VALUE c402.Position() WITH cx cy cw ch
          IF -32000 < visible THEN
@@ -438,7 +435,7 @@ RETURN 0
 RxCategories:
    CALL Notify 'category', 'add', 'New software: Latest'||D2C(9)||'https://ecsoft2.org/xml-export'
    CALL RxDownload 'https://ecsoft2.org/export/categories-export.xml'||D2C(9)||'-'
-RETURN
+RETURN 0
 
 RxDropDown:
    dd = 'category dropdown'
@@ -462,7 +459,7 @@ RxDropDown:
       END
    END
 RETURN
-   
+
 RxFileExists: PROCEDURE EXPOSE !_hdd_!
    IF STRIP( ARG(1) ) = '' THEN RETURN 0
    CALL RxGetURLComponents ARG(1)
@@ -475,7 +472,7 @@ RxDownload:
    DO WHILE ( !_row_! = '' | !_row_! = 0 ) & VAL( 'Downloading' ) = 1
       CALL Sleep 500
    END
-   IF 1 < VAL( 'Sequence' ) & !_row_! <> '' THEN RETURN 0
+   IF RxChkAbort() & !_row_! <> '' THEN RETURN 1
    CALL VAL 'Downloading', 1
    IF \DATATYPE( !_row_!, 'W' ) THEN
    DO
@@ -522,64 +519,65 @@ RxDownload:
          CALL Notify 'viewport', 'load'
       END
 RETURN Result( !_tid_! )
-   
+
 RxChkAbort: PROCEDURE
-   IF 1 < VAL( 'Sequence' ) THEN
+   IF 1 <> VAL( 'Sequence' ) THEN
    DO
-      CALL VAL 'Sequence', ARG(1)
+      IF 0 < LENGTH( ARG(1) ) THEN
+         CALL VAL 'Sequence', ARG(1)
       RETURN 1
    END
 RETURN 0
 
 RxPrepareImages:
    CALL Notify 'main', 'progressbar', 'show'
-   IF RxChkAbort(0) THEN RETURN 0
-   CALL RxLoadImages 1, MIN( VAL( 'app0' ), VAL( 'viewport.0' ) )
-   IF RxChkAbort(0) THEN RETURN 0
+   IF \RxLoadImages( 1, MIN( VAL( 'app0' ), VAL( 'viewport.0' ) ) ) THEN
    DO !_j_! = MIN( VAL( 'app0' ), VAL( 'viewport.0' ) ) + 1 TO MAX( VAL( 'app0' ), VAL( 'viewport.0' ) )
       IF DATATYPE( VAL( 'viewport.'!_j_!'.sshot.0' ), 'W' ) THEN
       DO !_k_! = 1 TO VAL( 'viewport.'!_j_!'.sshot.0' )
          CALL VAL 'viewport.'!_j_!'.sshot.'!_k_!'.img.src', RxLoadImage( 'viewport.'!_j_!'.sshot.'!_k_!'.img.src' )
-         IF RxChkAbort(0) THEN RETURN 0
+         IF RxChkAbort() THEN LEAVE !_j_!
          CALL VAL 'viewport.'!_j_!'.sshot.'!_k_!'.href', RxLoadImage( 'viewport.'!_j_!'.sshot.'!_k_!'.href' )
-         IF RxChkAbort(0) THEN RETURN 0
+         IF RxChkAbort() THEN LEAVE !_j_!
       END
       ELSE DO
          CALL VAL 'viewport.'!_j_!'.sshot.a.img.src', RxLoadImage( 'viewport.'!_j_!'.sshot.a.img.src' )
-         IF RxChkAbort(0) THEN RETURN 0
+         IF RxChkAbort() THEN LEAVE !_j_!
          CALL VAL 'viewport.'!_j_!'.sshot.a.href', RxLoadImage( 'viewport.'!_j_!'.sshot.a.href' )
-         IF RxChkAbort(0) THEN RETURN 0
+         IF RxChkAbort() THEN LEAVE !_j_!
       END
    END
-   CALL RxLoadImages MIN( VAL( 'app0' ), VAL( 'viewport.0' ) ) + 1, MAX( VAL( 'app0' ), VAL( 'viewport.0' ) )
-   CALL VAL 'Sequence', 0
+   IF \RxChkAbort() THEN
+      CALL RxLoadImages MIN( VAL( 'app0' ), VAL( 'viewport.0' ) ) + 1, MAX( VAL( 'app0' ), VAL( 'viewport.0' ) )
+   CALL VAL 'Sequence', VAL( 'Sequence' ) - 1
    CALL Notify 'main', 'progressbar', 'hide'
 RETURN 0
-   
+
 RxLoadImages: PROCEDURE
    DO !_j_! = ARG(1) TO ARG(2)
+      IF RxChkAbort() THEN RETURN 1
       IF DATATYPE( VAL( 'viewport.'!_j_!'.sshot.0' ), 'W' ) THEN
       DO !_k_! = 1 TO VAL( 'viewport.'!_j_!'.sshot.0' )
          CALL RxLoadImage 'viewport.'!_j_!'.sshot.'!_k_!'.img.src', !_j_!
-         IF RxChkAbort(0) THEN LEAVE
+         IF RxChkAbort() THEN RETURN 1
          CALL Notify 'main', 'progressbar', 100 * ( !_j_! - 1 ) / MAX( 1, VAL( 'viewport.0' ) ) + 50 * !_k_! / MAX( 1, VAL( 'viewport.0' ) + VAL( 'viewport.'!_j_!'.sshot.0' ) )
          CALL RxLoadImage 'viewport.'!_j_!'.sshot.'!_k_!'.href', !_j_!
-         IF RxChkAbort(0) THEN LEAVE
+         IF RxChkAbort() THEN RETURN 1
          CALL Notify 'main', 'progressbar', 100 * ( !_j_! - 0.5 ) / MAX( 1, VAL( 'viewport.0' ) ) + 50 * !_k_! / MAX( 1, VAL( 'viewport.0' ) + VAL( 'viewport.'!_j_!'.sshot.0' ) )
       END
       ELSE DO
          CALL RxLoadImage 'viewport.'!_j_!'.sshot.a.img.src', !_j_!
-         IF RxChkAbort(0) THEN LEAVE
+         IF RxChkAbort() THEN RETURN 1
          CALL Notify 'main', 'progressbar', 100 * ( !_j_! - 0.5 ) / MAX( 1, VAL( 'viewport.0' ) )
          CALL RxLoadImage 'viewport.'!_j_!'.sshot.a.href', !_j_!
       END
       IF !_j_! < VAL( 'app0' ) + 1 THEN
          CALL Notify 'viewport', 'load', !_j_!
-      IF RxChkAbort(0) THEN LEAVE
+      IF RxChkAbort() THEN RETURN 1
       CALL Notify 'main', 'progressbar', 100 * !_j_! / MAX( 1, VAL( 'viewport.0' ) )
    END
 RETURN 0
-   
+
 RxLoadImage: PROCEDURE
    !_tab_! = D2C(9)
    PARSE ARG !_val_!, !_row_!
@@ -597,9 +595,9 @@ RxLoadImage: PROCEDURE
       IF STREAM( tgt'\'host.file, 'C', 'QUERY EXISTS' ) <> '' THEN
       DO
          IF TRANSLATE( RIGHT( !_val_!, 4 ) ) = '.SRC' THEN
-            !_rc_! = rxImgReSize( tgt'\'host.file, tgt'\'host.basename'.bmp', 142, 100 )
+            !_rc_! = RxImgReSize( tgt'\'host.file, tgt'\'host.basename'.bmp', 142, 100 )
          ELSE
-            !_rc_! = rxImgReSize( tgt'\'host.file, tgt'\'host.basename'.bmp' )
+            !_rc_! = RxImgReSize( tgt'\'host.file, tgt'\'host.basename'.bmp' )
          CALL SysFileDelete tgt'\'host.file
          IF !_rc_! = 0 THEN
             RETURN tgt'\'host.basename'.bmp'
@@ -613,8 +611,10 @@ RxLoadImage: PROCEDURE
          RETURN VAL( !_val_!'.image' )
       CALL RxGetURLComponents VAL( !_val_! )
       PARSE VALUE host.path WITH .'/default/'subfolder
-      tgt = VAL( 'HOME' )'\'TRANSLATE( subfolder, '\', '/' )
-      CALL RxDownload VAL( !_val_! )!_tab_!||tgt||!_tab_!||!_row_!
+      !_tgt_! = VAL( 'HOME' )'\'TRANSLATE( subfolder, '\', '/' )
+      IF RxChkAbort() THEN RETURN !_val_!
+      CALL RxDownload VAL( !_val_! )!_tab_!||!_tgt_!||!_tab_!||!_row_!
+      IF RxChkAbort() THEN RETURN !_val_!
       !_ret_! = RxLoadImage( !_val_!, 0 )
       CALL VAL !_val_!, !_ret_!
       RETURN !_ret_!
@@ -622,7 +622,86 @@ RxLoadImage: PROCEDURE
    ELSE IF 0 = POS( '#10', VAL( !_val_! ) ) THEN
       CALL VAL !_val_!||'.image', VAL( !_val_! )
 RETURN '#101'
+
+RxImgReSize: PROCEDURE
+   IF ARG() = 0 THEN
+      RETURN 'result = RxImgReSize( input_image[, output_image, [width], [height], [options] ]'
+   PARSE ARG fileIn, fileOut, w, h, option
+
+   rc = GBM_FileHeader( fileIn, '', 'header.' )
+   IF rc <> 0 THEN RETURN rc
+   IF ARG() = 1 THEN
+      RETURN header.width header.height header.bpp
+   IF fileOut = '' THEN fileOut = fileIn
+   rc = GBM_FilePalette( fileIn, '', 'color.' )
+   IF rc <> 0 THEN RETURN rc
+   rc = GBM_FileData( fileIn, '', 'data' )
+   IF rc <> 0 THEN RETURN rc
    
+   option = TRANSLATE( option, XRANGE( 'a', 'z' ), XRANGE( 'A', 'Z' ) )
+   aspect = 0
+   IF 0 < WORDPOS( 'aspect', option ) THEN
+   DO
+      PARSE VALUE option WITH pre'aspect'post
+      option = SPACE( pre||post )
+      aspect = 1
+   END
+
+   /* This libarary doesn't default to useful stuff, you have to do ALL the tedious stuff yourself! Gahhh! Hideous! */
+   IF 0 = LENGTH( option ) THEN option = 'simple'
+   
+   IF 0 < LENGTH( w ) THEN
+      IF DATATYPE( w, 'W' ) THEN
+         IF aspect & datatype( h, 'W' ) THEN
+         DO
+            IF w / header.width < h / header.height THEN
+               h = header.height * w / header.width % 1
+            ELSE
+               w = header.width * h / header.height % 1
+         END
+         ELSE IF aspect THEN
+            h  = header.height * w / header.width % 1
+         ELSE
+            h = header.height
+
+   IF 0 < LENGTH( h ) THEN
+      IF DATATYPE( h, 'W' ) THEN
+         IF w = '' THEN
+            IF aspect THEN
+               w  = header.width * h / header.height % 1
+            ELSE
+               w  = header.width
+   
+   IF w <> '' & h <> '' THEN
+   DO
+      rc = GBM_ScaleIsSupported( option, header.bpp, 'color.' )
+      IF rc = 0 THEN
+      DO
+         /* check if output format supports 24bpp */
+         rc = GBM_FileType( fileOut, 'fileOutType.' )
+         IF rc <> 0 THEN
+            RETURN rc
+
+         IF 0 = GBM_IsBppSupported( WORD( fileOutType.extensions, 1 ), 24, 'w' ) THEN
+            /* Requested scaler is not available and output format does */
+            /* not support 24bpp, so switch to simple scaler. */
+            option = 'simple'
+         ELSE DO
+            /* convert bitmap to 24bpp so that the scaler request can be fulfilled */
+            rc = GBM_PaletteDataTo24bpp( 'header.', 'color.', 'data' )
+            IF rc <> 0 THEN
+               RETURN rc
+         END
+      END
+      newSize.width  = w
+      newSize.height = h
+      rc = GBM_Scale( option, 'header.', 'color.', 'data', 'newSize.' )
+      IF rc <> 0 THEN
+         RETURN rc
+   END
+   /* write the bitmap */
+RETURN GBM_FileWrite( fileOut, '', 'header.', 'color.', 'data' )
+
 RxMonitor:
    !_tab_! = D2C(9)
    PARSE VALUE ARG(1) WITH !_row_!(!_tab_!)!_code_!(!_tab_!)!_qName_!
@@ -639,10 +718,11 @@ RxMonitor:
       IF 0 < !_qd_! THEN
          !_status_! = !_status_!||LINEIN( 'QUEUE:' )
       CALL Use 'QUEUE', 0
+      IF RxChkAbort() & !_row_! <> '' THEN LEAVE
       IF !_status_! = '' THEN
       DO
          IF !_qd_! < 1 THEN
-            IF 100 < VAL( 'viewport.'!_row_! ) | RxChkAbort(0) & !_row_! <> '' THEN
+            IF 100 < VAL( 'viewport.'!_row_! ) THEN
             LEAVE
          CALL Sleep 500
       END
@@ -693,8 +773,6 @@ RxMonitor:
             CALL Notify 'viewport', 'load'
             IF 99 < VAL( 'viewport.'!_row_!'.0' ) THEN LEAVE
          END
-/*            CALL SelectFor 'app'||( !_j_! // VAL( 'app0' ) + 1 ), 'C409', MIN( 100, !_percent_! )*/
-/*            CALL Notify 'main', 'progressbar', MIN( 100, !_percent_! )*/
          !_status_! = ''
       END
       ELSE
@@ -721,7 +799,7 @@ RxKeyVal: PROCEDURE EXPOSE !_row_count_! stem. viewport.
    END
    CALL VAL !_stem_!'0', !_keyval_!
 RETURN 0
-   
+
 RxTag: PROCEDURE EXPOSE !_counter_! stem. viewport.
    PARSE ARG !_str_!, !_stem_!, !_nodes_!
    IF !_nodes_! = 1 THEN
@@ -738,6 +816,8 @@ RxTag: PROCEDURE EXPOSE !_counter_! stem. viewport.
       !_t_tag_! = SUBWORD( !_tag_!, 1, 1 )
       CALL VAL !_stem_!||!_t_tag_!||'.a.href', ''
       CALL VAL !_stem_!||!_t_tag_!||'.a.img.src', ''
+      CALL VAL !_stem_!||'1.href', ''
+      CALL VAL !_stem_!||'1.img.src', ''
       IF 0 < POS( '=', !_tag_! ) THEN
          CALL RxKeyVal SUBWORD( !_tag_!, 2 ), !_stem_!||!_t_tag_!'.'
       !_start_tag_! = '<'!_tag_!'>'
@@ -768,7 +848,7 @@ RxTag: PROCEDURE EXPOSE !_counter_! stem. viewport.
       !_str_! = STRIP( !_str_! )
    END
 RETURN 0
-   
+
 RxGetRow: PROCEDURE
    !_i_! = C401.Hint()
    IF 3 < LENGTH( !_i_! ) THEN
@@ -874,7 +954,7 @@ D2L:
    ELSE IF VAL( 'iDate' ) = 2 THEN
       RETURN !_YYYY_!||!_sep_!||!_MM_!||!_sep_!||!_DD_!
 RETURN !_YYYY_!||!_sep_!||!_DD_!||!_sep_!||!_MM_!
-   
+
 RxChkDLL: PROCEDURE
    !_env_! = 'OS2ENVIRONMENT'
    !_bd_! = SysBootDrive()
@@ -890,14 +970,18 @@ RxChkDLL: PROCEDURE
       END
    END
    CALL SETLOCAL
+   !_old_dir_! = DIRECTORY()
+   IF 0 < LENGTH( ARG(4) ) THEN
+      CALL DIRECTORY !_bd_!
    !_chk_! = 'CHK_LIBPATH_CHK'
    CALL VALUE !_chk_!, !_libpath_!, !_env_!
    !_path_! = STRIP( SysSearchPath( !_chk_!, ARG(1) ) )
+   CALL DIRECTORY !_old_dir_!
    CALL ENDLOCAL
    IF 3 < LENGTH( !_path_! ) THEN
       RETURN RxChkApp( 'BLDLEVEL.EXE', ' '||!_path_!, ARG(2), ARG(3) )
 RETURN ''
-   
+
 RxChkParams:
    IF 0 < LENGTH( rxChkApp( 'wget.exe', ' --version --quiet', 'GNU WGET' ) ) THEN
       RETURN 'WGet -c -t 10 -w 30 --referer=%h --progress=bar:force -O "%p\%f" "%u"'
@@ -1044,6 +1128,6 @@ CHANGESTR: PROCEDURE /* needle, haystack <, newneedle> */
       END
    END
 RETURN new_haystack||haystack
-   
+
 RxVersion:
-RETURN @#Jan-Erik Laerka:1.01.05#@##1## 2018-10-05               SONYVAIO::::0::@@Online Software on eCSoft/2
+RETURN '     @#Jan-Erik Laerka:1.02.02#@##1## December 14, 2018         SONYVAIO::::0::@@Online Software on eCSoft/2     '

@@ -16,11 +16,9 @@ The application display each record with a title, image, a descriptive text, dow
 The title for each record act as a link to the web site page (launch the web browser).
 
 Prerequisites
-DrCtl017.dll - to attach window on window and image viewer (Chris Wolgemuth)
+DrCtl017.dll - to attach window on window (Chris Wolgemuth)
   https://www.os2world.com/wiki/index.php/DrDialog_Control 
-rxImgSize - for image processing to retrieve image size (Jan-Erik Lärka)
-  https://github.com/OS2World/LIB-REXX-RxImgSize
-Generalized Bitmap Module (GBM), built with OpenWatcom - used by rxImgSize that was built with OpenWatcom
+Generalized Bitmap Module (GBM) for image processing functions
   https://ecsoft2.org/generalised-bitmap-module-gbm
 
 Done
@@ -28,8 +26,8 @@ Updated graphichal resources (Bitmaps)
 Google search like function, with results in dropdown
 Settings
 Downloads/launch installers
-
-ToDo
 UTF-8 to system codepage translation
 Help file
+
+ToDo
 Installer

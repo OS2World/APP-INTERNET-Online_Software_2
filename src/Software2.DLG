@@ -1,15 +1,27 @@
 #include "OS2.H"
 
-DLGTEMPLATE 800 LOADONCALL MOVEABLE DISCARDABLE
+DLGTEMPLATE 100 LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
-    DIALOG "RexxUtil is unavailable", 800, 20, 94, 139, 53, 
-           WS_SYNCPAINT | NOT FS_DLGBORDER | FS_SIZEBORDER | WS_VISIBLE,
-           FCF_SYSMENU | FCF_TITLEBAR
+    DIALOG "Online Software / 2", 100, 20, 164, 64, 19, 
+           WS_SYNCPAINT | NOT FS_DLGBORDER | FS_SIZEBORDER,
+           FCF_SYSMENU | FCF_TITLEBAR | FCF_MINBUTTON | FCF_MAXBUTTON
     BEGIN
-        LTEXT           "This application need functions provided by RexxUtil to function", 801, 29, 14, 109, 28,
-                        NOT WS_GROUP | DT_WORDBREAK
-        PUSHBUTTON      "Abort", 802, 49, 3, 40, 9, WS_GROUP
-        CONTROL         "#725", 803, 6, 22, 21, 20, "BILLBOARD",
-                        WS_VISIBLE | WS_CLIPSIBLINGS | 32769
+        CONTROL         "#117", 101, 2, 3, 20, 16, "ICONBUTTON", WS_VISIBLE
+        CONTROL         "c9b0X3,3'Search for ...'", 106, 4, 13, 4, 4, "TURTLE"
+        PUSHBUTTON      "", 102, 10, 11, 8, 7, WS_GROUP | BS_NOPOINTERFOCUS
+        PUSHBUTTON      "", 108, 9, 11, 8, 7, BS_NOPOINTERFOCUS
+        DEFPUSHBUTTON   "Push", 112, 2, 0, 11, 9, NOT WS_VISIBLE
+        CONTROL         "#9999", 105, 2, 0, 11, 9, "BILLBOARD", WS_VISIBLE | 22
+        ENTRYFIELD      "", 104, 4, 0, 11, 8, NOT WS_VISIBLE
+        CONTROL         "", 111, 14, 5, 4, 4, WC_SCROLLBAR,
+                        WS_VISIBLE | SBS_VERT
+        PUSHBUTTON      "", 107, 26, 11, 8, 7, WS_GROUP | BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Install cURL (or WGet) to use this software", 113, 22, 2, 11, 10,
+                        NOT WS_VISIBLE | BS_NOPOINTERFOCUS
+        CONTROL         "#120", 109, 42, 3, 20, 16, "ICONBUTTON", WS_VISIBLE
+        CONTROL         "c8b15x0y0<(x0,100)(x100,100)(x0,100)>x100,100c0<(x100,0)(x0,0)(x100,0)>c7X1,1<(x0,100DR)(x100,100DL)(x0,100DR)>c0X2,2<(x100,0LLUU)(x100,100LLDD)(x0,100RRDD)>c16x100,100DL<(x100,0UL)(x0,0UR)(x100,0UL)>", 103, 2, 0, 25, 19, "TURTLE",
+                        WS_VISIBLE | WS_CLIPSIBLINGS | 32768
+        CONTROL         "c8b15x0y0<(x0,100)(x100,100)(x0,100)>x100,100c0<(x100,0)(x0,0)(x100,0)>c7X1,1<(x0,100DR)(x100,100DL)(x0,100DR)>", 110, 12, 0, 25, 19, "TURTLE",
+                        WS_CLIPSIBLINGS | 32768
     END
 END

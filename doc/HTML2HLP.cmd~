@@ -101,7 +101,8 @@ PARSE PULL
 RETURN rc
 
 rxWrite2File: PROCEDURE EXPOSE (expose_list) (f_array)
-    CALL SysFileDelete ARG(1)
+   CALL SysFileDelete ARG(1)
+   call trace '?i'
     DO i = 1 TO VALUE( f_array'.0' )
         j = i - 1
         CALL rxOut 0, 'Pass: '||FORMAT( ARG(2)/ARG(3),, 0 )||' ( of '||FORMAT( 1/ARG(3),, 0 )||' )'
