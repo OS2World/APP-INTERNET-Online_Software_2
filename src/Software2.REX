@@ -293,6 +293,7 @@ DO
          CALL C409.Show
          CALL C404.Hide
          CALL VAL 'viewport.'!_j_!'.0', 0
+         CALL RxChkAbort 1
          CALL Start 'RxDownload', VAL( 'viewport.'!_j_!'.dwnld' )||D2C(9)||!_temp_!||D2C(9)||!_j_!
          DROP !_temp_!
       END
@@ -1130,4 +1131,4 @@ CHANGESTR: PROCEDURE /* needle, haystack <, newneedle> */
 RETURN new_haystack||haystack
 
 RxVersion:
-RETURN '     @#Jan-Erik Laerka:1.02.02#@##1## December 14, 2018         SONYVAIO::::0::@@Online Software on eCSoft/2     '
+RETURN '     @#Jan-Erik Laerka:1.02.03#@##1## December 18, 2018         SONYVAIO::::0::@@Online Software on eCSoft/2          '
